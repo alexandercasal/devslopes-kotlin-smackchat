@@ -17,7 +17,6 @@
         android:layout_marginBottom="8dp"
         android:layout_marginStart="12dp"
         android:contentDescription="@string/profile_image"
-        android:paddingTop="@dimen/nav_header_vertical_spacing"
         app:layout_constraintBottom_toTopOf="@+id/loginButtonNavHeader"
         app:layout_constraintStart_toStartOf="parent"
         app:srcCompat="@drawable/profiledefault" />

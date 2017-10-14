@@ -22,15 +22,21 @@ object UserDataService {
         var r = 0
         var g = 0
         var b = 0
+        var a = 1.0
 
         val scanner = Scanner(strippedColor)
         if (scanner.hasNext()) {
             r = (scanner.nextDouble() * 255).toInt()
             g = (scanner.nextDouble() * 255).toInt()
             b = (scanner.nextDouble() * 255).toInt()
+            a = scanner.nextDouble()
         }
 
-        return Color.rgb(r, g, b)
+        if (a > 0.0) {
+            return Color.rgb(r, g, b)
+        } else {
+            return Color.TRANSPARENT
+        }
     }
 
     fun logout() {
