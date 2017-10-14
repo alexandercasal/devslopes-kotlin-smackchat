@@ -1,4 +1,4 @@
-package com.alexandercasal.devslopes.smackchat
+package com.alexandercasal.devslopes.smackchat.controller
 
 import android.content.Intent
 import android.graphics.Color
@@ -7,14 +7,14 @@ import android.os.Bundle
 import android.support.v4.content.LocalBroadcastManager
 import android.view.View
 import android.widget.Toast
+import com.alexandercasal.devslopes.smackchat.R
 import com.alexandercasal.devslopes.smackchat.services.AuthService
-import com.alexandercasal.devslopes.smackchat.services.UserDataService
 import kotlinx.android.synthetic.main.activity_create_user.*
 import java.util.*
 
 class CreateUserActivity : AppCompatActivity() {
 
-    var userAvatar = "profileDefault"
+    var userAvatar = "profiledefault"
     var avatarColor = "[0.5, 0.5, 0.5, 1]"
 
     override fun onCreate(savedInstanceState: Bundle?) {
