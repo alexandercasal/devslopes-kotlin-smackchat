@@ -1,11 +1,13 @@
 package com.alexandercasal.devslopes.smackchat
 
+import android.content.Intent
 import android.graphics.Color
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import com.alexandercasal.devslopes.smackchat.services.AuthService
+import com.alexandercasal.devslopes.smackchat.services.UserDataService
 import kotlinx.android.synthetic.main.activity_create_user.*
 import java.util.*
 
@@ -50,6 +52,7 @@ class CreateUserActivity : AppCompatActivity() {
     }
 
     fun createUserClicked(view: View) {
+        val username = createUserNameText.text.toString()
         val email = createEmailText.text.toString()
         val password = createPasswordText.text.toString()
 
@@ -57,11 +60,22 @@ class CreateUserActivity : AppCompatActivity() {
             if (registerSuccess) {
                 AuthService.loginUser(this, email, password) { loginSuccess ->
                     if (loginSuccess) {
-                        println(AuthService.authToken)
-                        println(AuthService.userEmail)
-                        println("LoggedIn: ${AuthService.isLoggedIn}")
+                        AuthService.createUser(this, username, email, userAvatar, avatarColor) { createSuccess ->
+                            if (createSuccess) {
+                                println(UserDataService.avatarName)
+                                println(UserDataService.avatarColor)
+                                println(UserDataService.name)
+                                finish()
+                            } else {
+                                Toast.makeText(this, "Unable to create user", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    } else {
+                        Toast.makeText(this, "Unable to login", Toast.LENGTH_SHORT).show()
                     }
                 }
+            } else {
+                Toast.makeText(this, "Unable to register", Toast.LENGTH_SHORT).show()
             }
         }
     }
