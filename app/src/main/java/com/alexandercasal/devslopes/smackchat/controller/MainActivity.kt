@@ -18,11 +18,15 @@ import com.alexandercasal.devslopes.smackchat.R
 import com.alexandercasal.devslopes.smackchat.services.AuthService
 import com.alexandercasal.devslopes.smackchat.services.UserDataService
 import com.alexandercasal.devslopes.smackchat.utils.BROADCAST_USER_DATA_CHANGE
+import com.alexandercasal.devslopes.smackchat.utils.SOCKET_URL
+import io.socket.client.IO
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.nav_header_main.*
 
 class MainActivity : AppCompatActivity() {
+
+    val socket = IO.socket(SOCKET_URL)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,9 +37,26 @@ class MainActivity : AppCompatActivity() {
                 this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
-        hideKeyboard()
+    }
 
+    override fun onStart() {
+        super.onStart()
         LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangeReceiver, IntentFilter(BROADCAST_USER_DATA_CHANGE))
+    }
+
+    override fun onStop() {
+        super.onStop()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(userDataChangeReceiver)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        socket.connect()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        socket.disconnect()
     }
 
     private val userDataChangeReceiver = object: BroadcastReceiver() {
@@ -86,18 +107,17 @@ class MainActivity : AppCompatActivity() {
                         val channelName = nameTextField.text.toString()
                         val channelDesc = descTextField.text.toString()
 
-                        // TODO: Create channel with the channel name and description
-                        hideKeyboard()
+                        socket.emit("newChannel", channelName, channelDesc)
                     }
                     .setNegativeButton("Cancel") { dialogInterface, i ->
-                        hideKeyboard()
+
                     }
                     .show()
         }
     }
 
     fun sendMessageButtonClicked(view: View) {
-
+        hideKeyboard()
     }
 
     fun hideKeyboard() {
