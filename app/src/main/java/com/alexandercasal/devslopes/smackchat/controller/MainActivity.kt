@@ -11,15 +11,19 @@ import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import com.alexandercasal.devslopes.smackchat.R
+import com.alexandercasal.devslopes.smackchat.model.Channel
 import com.alexandercasal.devslopes.smackchat.services.AuthService
+import com.alexandercasal.devslopes.smackchat.services.MessageService
 import com.alexandercasal.devslopes.smackchat.services.UserDataService
 import com.alexandercasal.devslopes.smackchat.utils.BROADCAST_USER_DATA_CHANGE
 import com.alexandercasal.devslopes.smackchat.utils.SOCKET_URL
 import io.socket.client.IO
+import io.socket.emitter.Emitter
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.nav_header_main.*
@@ -37,26 +41,16 @@ class MainActivity : AppCompatActivity() {
                 this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
-    }
 
-    override fun onStart() {
-        super.onStart()
         LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangeReceiver, IntentFilter(BROADCAST_USER_DATA_CHANGE))
-    }
-
-    override fun onStop() {
-        super.onStop()
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(userDataChangeReceiver)
-    }
-
-    override fun onResume() {
-        super.onResume()
         socket.connect()
+        socket.on("channelCreated", onNewChannel)
     }
 
-    override fun onPause() {
-        super.onPause()
+    override fun onDestroy() {
         socket.disconnect()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(userDataChangeReceiver)
+        super.onDestroy()
     }
 
     private val userDataChangeReceiver = object: BroadcastReceiver() {
@@ -65,7 +59,6 @@ class MainActivity : AppCompatActivity() {
                 userNameNavHeader.text = UserDataService.name
                 userEmailNavHeader.text = UserDataService.email
                 val resourceID = resources.getIdentifier(UserDataService.avatarName, "drawable", packageName)
-                System.out.println(UserDataService.avatarName)
                 userImageNavHeader.setImageResource(resourceID)
                 userImageNavHeader.setBackgroundColor(UserDataService.getAvatarColor(UserDataService.avatarColor))
                 loginButtonNavHeader.text = "Log out"
@@ -110,9 +103,23 @@ class MainActivity : AppCompatActivity() {
                         socket.emit("newChannel", channelName, channelDesc)
                     }
                     .setNegativeButton("Cancel") { dialogInterface, i ->
-
+                        // Cancel
                     }
                     .show()
+        }
+    }
+
+    private val onNewChannel = Emitter.Listener { args ->
+        runOnUiThread {
+            val channelName = args[0] as String
+            val channelDesc = args[1] as String
+            val channelID = args[2] as String
+
+            val newChannel = Channel(channelName, channelDesc, channelID)
+            MessageService.channels.add(newChannel)
+            println(newChannel.name)
+            println(newChannel.description)
+            println(newChannel.id)
         }
     }
 
