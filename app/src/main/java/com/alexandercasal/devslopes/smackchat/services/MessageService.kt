@@ -1,6 +1,13 @@
 package com.alexandercasal.devslopes.smackchat.services
 
+import android.content.Context
+import android.util.Log
 import com.alexandercasal.devslopes.smackchat.model.Channel
+import com.alexandercasal.devslopes.smackchat.utils.URL_GET_CHANNELS
+import com.android.volley.Response
+import com.android.volley.toolbox.JsonArrayRequest
+import com.android.volley.toolbox.Volley
+import org.json.JSONException
 
 /**
  * Created by Alexander on 10/15/2017.
@@ -8,4 +15,37 @@ import com.alexandercasal.devslopes.smackchat.model.Channel
 object MessageService {
 
     val channels = ArrayList<Channel>()
+
+    fun getChannels(context: Context, complete: (Boolean) -> Unit) {
+        val channelsRequest = object : JsonArrayRequest(Method.GET, URL_GET_CHANNELS, null, Response.Listener { response ->
+            try {
+                for (x in 0 until response.length()) {
+                    val channel = response.getJSONObject(x)
+                    val name = channel.getString("name")
+                    val channelDesc = channel.getString("description")
+                    val channelId = channel.getString("_id")
+                    val newChannel = Channel(name, channelDesc, channelId)
+                    channels.add(newChannel)
+                }
+                complete(true)
+            } catch (e: JSONException) {
+                Log.d("MessageService", "EXC: ${e.localizedMessage}")
+            }
+        }, Response.ErrorListener { error ->
+            Log.d("MessageService", "Could not retrieve channels")
+            complete(false)
+        }) {
+            override fun getHeaders(): MutableMap<String, String> {
+                val headers = HashMap<String, String>()
+                headers.put("Authorization", "Bearer ${AuthService.authToken}")
+                return headers
+            }
+
+            override fun getBodyContentType(): String {
+                return "application/json; charset=utf-8"
+            }
+        }
+
+        Volley.newRequestQueue(context).add(channelsRequest)
+    }
 }
