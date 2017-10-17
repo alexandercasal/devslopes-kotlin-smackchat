@@ -2,11 +2,11 @@ package com.alexandercasal.devslopes.smackchat.services
 
 import android.content.Context
 import android.util.Log
+import com.alexandercasal.devslopes.smackchat.controller.App
 import com.alexandercasal.devslopes.smackchat.model.Channel
 import com.alexandercasal.devslopes.smackchat.utils.URL_GET_CHANNELS
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonArrayRequest
-import com.android.volley.toolbox.Volley
 import org.json.JSONException
 
 /**
@@ -37,7 +37,7 @@ object MessageService {
         }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
-                headers.put("Authorization", "Bearer ${AuthService.authToken}")
+                headers.put("Authorization", "Bearer ${App.prefs.authToken}")
                 return headers
             }
 
@@ -46,6 +46,6 @@ object MessageService {
             }
         }
 
-        Volley.newRequestQueue(context).add(channelsRequest)
+        App.prefs.requestQueue.add(channelsRequest)
     }
 }
