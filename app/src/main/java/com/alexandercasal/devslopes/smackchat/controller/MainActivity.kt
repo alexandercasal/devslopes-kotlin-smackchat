@@ -66,6 +66,7 @@ class MainActivity : AppCompatActivity() {
         LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangeReceiver, IntentFilter(BROADCAST_USER_DATA_CHANGE))
         socket.connect()
         socket.on("channelCreated", onNewChannel)
+        socket.on("messageCreated", onNewMessage)
     }
 
     override fun onDestroy() {
@@ -156,8 +157,31 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private val onNewMessage = Emitter.Listener { args ->
+        runOnUiThread {
+            val msgBody = args[0] as String
+            val channelId = args[2] as String
+            val userName = args[3] as String
+            val userAvatar  = args[4] as String
+            val userAvatarColor = args[5] as String
+            val id = args[6] as String
+            val timeStamp = args[7] as String
+
+            val newMessage = com.alexandercasal.devslopes.smackchat.model.Message(msgBody,
+                    userName, channelId, userAvatar, userAvatarColor, id, timeStamp)
+            MessageService.messages.add(newMessage)
+        }
+    }
+
     fun sendMessageButtonClicked(view: View) {
-        hideKeyboard()
+        if (App.prefs.isLoggedIn && messageTextField.text.isNotEmpty() && selectedChannel != null) {
+            val userId = UserDataService.id
+            val channelId = selectedChannel!!.id
+            socket.emit("newMessage", messageTextField.text.toString(), userId, channelId,
+                    UserDataService.name, UserDataService.avatarName, UserDataService.avatarColor)
+            messageTextField.text.clear()
+            hideKeyboard()
+        }
     }
 
     fun hideKeyboard() {
